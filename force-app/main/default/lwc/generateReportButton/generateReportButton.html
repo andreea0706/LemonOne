@@ -1,0 +1,15 @@
+<!--
+  @description       : 
+  @author            : Andreea Ionescu BearingPoint GmbH
+  @group             : 
+  @last modified on  : 10-14-2021
+  @last modified by  : Andreea Ionescu, BearingPoint GmbH
+-->
+<template>
+    <lightning-card  title="Generate Report">
+        <lightning-button class="slds-m-left_x-small" label="Show Report" onclick={handleClickShowReport}></lightning-button>
+    </lightning-card>
+    <template if:true={showReport}>
+        <c-photographer-report record-id={recordId} onclose={handleCloseModal}></c-photographer-report>
+    </template>
+</template>

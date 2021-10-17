@@ -1,0 +1,12 @@
+{
+  "packageDirectories": [
+    {
+      "path": "force-app",
+      "default": true
+    }
+  ],
+  "name": "LemonOne",
+  "namespace": "",
+  "sfdcLoginUrl": "https://lemonone6-dev-ed.my.salesforce.com",
+  "sourceApiVersion": "52.0"
+}
