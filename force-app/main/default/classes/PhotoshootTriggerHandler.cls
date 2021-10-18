@@ -2,7 +2,7 @@
  * @description       : 
  * @author            : Andreea Ionescu BearingPoint GmbH
  * @group             : 
- * @last modified on  : 10-17-2021
+ * @last modified on  : 10-18-2021
  * @last modified by  : Andreea Ionescu, BearingPoint GmbH
 **/
 public with sharing class PhotoshootTriggerHandler {
@@ -53,13 +53,13 @@ public with sharing class PhotoshootTriggerHandler {
                 if (!photographerByPhotoshoots.get(photographerId).isEmpty()) {
                     for (Photoshoot__c photoshoot : photographerByPhotoshoots.get(photographerId)) {
 
-                        if (checkNewShootingOverlapsWithPhotogrpherBreak(photographersByPhotoshoot.get(photographerId),photoshoot)) {
+                         if (checkNewShootingOverlapsWithAnExistingOne(photographersByPhotoshoot.get(photographerId),photoshoot)) {
+                            // The nre shooting intefere with one of the existing shootings
+                            photographersByPhotoshoot.get(photographerId).Photographer__c.addError('The photographer has another shooting at this time!');
+                        } else if (checkNewShootingOverlapsWithPhotogrpherBreak(photographersByPhotoshoot.get(photographerId),photoshoot)) {
                             //The new shooting interfere with the photographer's break
                             photographersByPhotoshoot.get(photographerId).Photographer__c.addError('The photographer needs a break of 30 minutes between shootings!');
 
-                        } else if (checkNewShootingOverlapsWithAnExistingOne(photographersByPhotoshoot.get(photographerId),photoshoot)) {
-                            // The nre shooting intefere with one of the existing shootings
-                            photographersByPhotoshoot.get(photographerId).Photographer__c.addError('The photographer has another shooting at this time!');
                         } else {
                             continue;
                         }
@@ -71,14 +71,20 @@ public with sharing class PhotoshootTriggerHandler {
 
     private static Boolean checkNewShootingOverlapsWithAnExistingOne(Photoshoot__c newShooting, Photoshoot__c existingShooting) {
         return newShooting.ShootingDateTime__c.date() == existingShooting.ShootingDateTime__c.date() &&
-        newShooting.ShootingDateTime__c.time() >= existingShooting.ShootingDateTime__c.time() &&
-        newShooting.ShootingDateTime__c.time() <= existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60));
+        ((newShooting.ShootingDateTime__c.time() >= existingShooting.ShootingDateTime__c.time() &&
+        newShooting.ShootingDateTime__c.time() <= existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))) ||
+        (newShooting.ShootingDateTime__c.time().addMinutes((Integer) (newShooting.ShootingDuration__c * 60)) > existingShooting.ShootingDateTime__c.time() &&
+        newShooting.ShootingDateTime__c.time().addMinutes((Integer) (newShooting.ShootingDuration__c * 60)) < existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))));
+        
     }
 
     private static Boolean checkNewShootingOverlapsWithPhotogrpherBreak(Photoshoot__c newShooting, Photoshoot__c existingShooting) {
         return newShooting.ShootingDateTime__c.date() == existingShooting.ShootingDateTime__c.date() &&
-        newShooting.ShootingDateTime__c.time() > (existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))) &&
-        newShooting.ShootingDateTime__c.time() < (existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))).addMinutes(BREAK_BETWEEN_SHOOTINGS);
+        ((newShooting.ShootingDateTime__c.time() > (existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))) &&
+        newShooting.ShootingDateTime__c.time() < (existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60))).addMinutes(BREAK_BETWEEN_SHOOTINGS)) ||
+        (newShooting.ShootingDateTime__c.time().addMinutes((Integer) (newShooting.ShootingDuration__c * 60)).addMinutes(BREAK_BETWEEN_SHOOTINGS) > existingShooting.ShootingDateTime__c.time())&&
+        newShooting.ShootingDateTime__c.time().addMinutes((Integer) (newShooting.ShootingDuration__c * 60)).addMinutes(BREAK_BETWEEN_SHOOTINGS) < existingShooting.ShootingDateTime__c.time().addMinutes((Integer) (existingShooting.ShootingDuration__c * 60)));
+        
     }
 
 
